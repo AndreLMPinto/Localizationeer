@@ -103,51 +103,61 @@ namespace Localizationeer
         {
             int changes = 0;
 
-            using (ExcelPackage xlPackage = new ExcelPackage(new FileInfo(fileName)))
+            try
             {
-                var workSheet = xlPackage.Workbook.Worksheets.First();
-                var totalRows = workSheet.Dimension.End.Row;
-                var totalCols = workSheet.Dimension.End.Column;
-
-                txtOutput.Text = String.Empty;
-
-                for (int col = 2; col <= totalCols; col++)
+                using (ExcelPackage xlPackage = new ExcelPackage(new FileInfo(fileName)))
                 {
-                    var language = workSheet.Cells[1, col].Text;
-                    if (languageToCode.ContainsKey(language))
+                    var workSheet = xlPackage.Workbook.Worksheets.First();
+                    var totalRows = workSheet.Dimension.End.Row;
+                    var totalCols = workSheet.Dimension.End.Column;
+
+                    txtOutput.Text = String.Empty;
+
+                    for (int col = 2; col <= totalCols; col++)
                     {
-                        var languageCode = languageToCode[language];
-
-                        Dictionary<string, string> values = new Dictionary<string, string>();
-
-                        for (int row = 2; row <= totalRows; row++)
+                        var language = workSheet.Cells[1, col].Text;
+                        if (languageToCode.ContainsKey(language))
                         {
-                            var id = workSheet.Cells[row, 1].Text;
-                            if (id != String.Empty)
+                            var languageCode = languageToCode[language];
+
+                            Dictionary<string, string> values = new Dictionary<string, string>();
+
+                            for (int row = 2; row <= totalRows; row++)
                             {
-                                var value = workSheet.Cells[row, col].Text.Trim(new char[] { ' ', (char)160 }).Replace("\'", "\\\'").Replace("\\\\", "\\");
-                                values.Add(id, value);
+                                var id = workSheet.Cells[row, 1].Text;
+                                if (id != String.Empty)
+                                {
+                                    var value = workSheet.Cells[row, col].Text.Trim(new char[] { ' ', (char)160 }).Replace("\'", "\\\'").Replace("\\\\", "\\");
+                                    if (values.ContainsKey(id))
+                                    {
+                                        MessageBox.Show("Duplicate key detected \"" + id + "\".\nPlease review your Excel file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        return;
+                                    }
+                                    values.Add(id, value);
+                                }
                             }
-                        }
 
-                        if (values.Count > 0)
-                        {
-                            string[] languageCodes = languageCode.Split(',');
-                            foreach (string code in languageCodes)
+                            if (values.Count > 0)
                             {
-                                string fileName = Path.Combine(folderName, "values" + (code == String.Empty ? String.Empty : "-" + code) + "\\strings.xml");
+                                string[] languageCodes = languageCode.Split(',');
+                                foreach (string code in languageCodes)
+                                {
+                                    string fileName = Path.Combine(folderName, "values" + (code == String.Empty ? String.Empty : "-" + code) + "\\strings.xml");
 
-                                logAppendNewLine(language + (code == String.Empty ? String.Empty : " (" + code + ")"));
+                                    logAppendNewLine(language + (code == String.Empty ? String.Empty : " (" + code + ")"));
 
-                                changes += setValuesInXml(values, fileName);
+                                    changes += setValuesInXml(values, fileName);
+                                }
                             }
                         }
                     }
                 }
+                MessageBox.Show("Done: " + changes + " string ids modified");
             }
-
-            logAppend("\r\n\r\nDone: " + changes + " string ids modified");
-            MessageBox.Show("Done: " + changes + " string ids modified");
+            catch (IOException e)
+            {
+                MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private int setValuesInXml(Dictionary<string, string> values, string fileName)
@@ -163,30 +173,33 @@ namespace Localizationeer
                 XmlNode parent = doc.SelectSingleNode("/resources");
                 foreach (KeyValuePair<string, string> value in values)
                 {
-                    XmlNodeList nodes = doc.SelectNodes("/resources/string[@name='" + value.Key + "']");
+                    if (!String.IsNullOrEmpty(value.Value))
+                    {
+                        XmlNodeList nodes = doc.SelectNodes("/resources/string[@name='" + value.Key + "']");
 
-                    if (nodes.Count == 0)
-                    {
-                        XmlNode indent = doc.CreateTextNode("    ");
-                        parent.AppendChild(indent);
-                        XmlAttribute attr = doc.CreateAttribute("name");
-                        attr.Value = value.Key;
-                        XmlNode node = doc.CreateNode(XmlNodeType.Element, "string", null);
-                        node.Attributes.Append(attr);
-                        node.InnerXml = value.Value;
-                        parent.AppendChild(node);
-                        XmlNode lineBreak = doc.CreateTextNode("\n");
-                        parent.AppendChild(lineBreak);
-                        count++;
-                    }
-                    else
-                    {
-                        foreach (XmlNode node in nodes)
+                        if (nodes.Count == 0)
                         {
-                            if (node.InnerXml != value.Value)
+                            XmlNode indent = doc.CreateTextNode("    ");
+                            parent.AppendChild(indent);
+                            XmlAttribute attr = doc.CreateAttribute("name");
+                            attr.Value = value.Key;
+                            XmlNode node = doc.CreateNode(XmlNodeType.Element, "string", null);
+                            node.Attributes.Append(attr);
+                            node.InnerXml = value.Value;
+                            parent.AppendChild(node);
+                            XmlNode lineBreak = doc.CreateTextNode("\n");
+                            parent.AppendChild(lineBreak);
+                            count++;
+                        }
+                        else
+                        {
+                            foreach (XmlNode node in nodes)
                             {
-                                node.InnerXml = value.Value;
-                                count++;
+                                if (node.InnerXml != value.Value)
+                                {
+                                    node.InnerXml = value.Value;
+                                    count++;
+                                }
                             }
                         }
                     }
