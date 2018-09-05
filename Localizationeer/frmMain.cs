@@ -16,6 +16,7 @@ namespace Localizationeer
         Dictionary<String, String> languageToCode = new Dictionary<string, string>()
         {
             { "English", String.Empty },
+            { "Japanese", "ja" },
             { "German", "de" },
             { "French (France)", "fr" },
             { "Spanish (Spain)", "es" },
