@@ -1,228 +1,158 @@
-﻿using OfficeOpenXml;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Windows.Forms;
-using System.Xml;
 
 namespace Localizationeer
 {
-    public partial class frmMain : Form
+	public partial class frmMain : Form
     {
-        string fileName;
-        string folderName;
-
-        Dictionary<String, String> languageToCode = new Dictionary<string, string>()
-        {
-            { "English", String.Empty },
-            { "Japanese", "ja" },
-            { "German", "de" },
-            { "French (France)", "fr" },
-            { "Spanish (Spain)", "es" },
-            { "Simplified Chinese", "zh" },
-            { "Italian", "it" },
-            { "Dutch", "nl" },
-            { "Portuguese (Portugal)", "pt" },
-            { "Swedish", "sv" },
-            { "Finnish", "fi" },
-            { "Norwegian", "nb-rNO" },
-            { "Danish", "da" },
-            { "Estonian", "et" },
-            { "Latvian", "lv" },
-            { "Lithuanian", "lt" },
-            { "French (Canada)", "fr-rCA" },
-            { "Portuguese (Brazil)", "pt-rBR" },
-            { "Spanish (Mexico)", "es-rMX" },
-            { "Turkish", "tr-rTR" },
-            { "Greek", "el" },
-            { "Traditional Chinese", "zh-rHK,zh-rTW" },
-            { "Thai", "th-rTH" },
-            { "Indonesian (Bahasa Indonesia)", "id,in" },
-            { "Russian", "ru-rRU" },
-            { "Polish", "pl" },
-            { "Hebrew", "he,iw" },
-            { "Hungarian", "hu" },
-            { "Slovakian", "sk" },
-            { "Czech", "cs" },
-            { "Arabic", "ar" }
-        };
-
         public frmMain()
         {
             InitializeComponent();
-            if (!String.IsNullOrEmpty(Properties.Settings.Default.ValuesFolder))
-            {
-                folderName = Properties.Settings.Default.ValuesFolder;
-            }
-            tbxSelectedFolder.Text = folderName;
-            if (!String.IsNullOrEmpty(Properties.Settings.Default.ExcelFile))
-            {
-                fileName = Properties.Settings.Default.ExcelFile;
-            }
-            tbxSelectedFile.Text = fileName;
-            updateApplyButton();
+			InitializeControls();
         }
+
+		private void InitializeControls()
+		{
+			cbxOption.SelectedIndex = Properties.Settings.Default.Action;
+			if (!String.IsNullOrEmpty(Properties.Settings.Default.ValuesFolder))
+			{
+				tbxSelectedFolder.Text = Properties.Settings.Default.ValuesFolder;
+			}
+			if (!String.IsNullOrEmpty(Properties.Settings.Default.ExcelFile))
+			{
+				tbxSelectedFile.Text = Properties.Settings.Default.ExcelFile;
+			}
+			NudID.Value = Properties.Settings.Default.IdColumnIndex;
+			NudEnglish.Value = Properties.Settings.Default.EnglishColumnIndex;
+			updateButtons();
+		}
+
+		private void ResetSettings()
+		{
+			Properties.Settings.Default.ValuesFolder = "";
+			Properties.Settings.Default.ExcelFile = "";
+			// excel col,row count is 1 based
+			Properties.Settings.Default.IdColumnIndex = 1;
+			Properties.Settings.Default.EnglishColumnIndex = 2;
+			Properties.Settings.Default.Action = 0;
+		}
 
         private void btnSelectFolder_Click(object sender, EventArgs e)
         {
             if (fbdSelectFolder.ShowDialog() == DialogResult.OK && !String.IsNullOrEmpty(fbdSelectFolder.SelectedPath))
             {
-                folderName = fbdSelectFolder.SelectedPath;
-                tbxSelectedFolder.Text = folderName;
-                updateApplyButton();
-
-                Properties.Settings.Default.ValuesFolder = folderName;
-                Properties.Settings.Default.Save();
+				tbxSelectedFolder.Text = fbdSelectFolder.SelectedPath;
             }
-        }
+		}
 
-        private void btnSelectFile_Click(object sender, EventArgs e)
+		private void tbxSelectedFolder_TextChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default.ValuesFolder = tbxSelectedFolder.Text;
+			Properties.Settings.Default.Save();
+			updateButtons();
+		}
+
+		private void btnSelectFile_Click(object sender, EventArgs e)
+		{
+			if (oflSelectFile.ShowDialog() == DialogResult.OK && !String.IsNullOrEmpty(oflSelectFile.FileName))
+			{
+				tbxSelectedFile.Text = oflSelectFile.FileName;
+			}
+		}
+
+		private void tbxSelectedFile_TextChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default.ExcelFile = tbxSelectedFile.Text;
+			Properties.Settings.Default.Save();
+			updateButtons();
+		}
+
+		private void NudID_ValueChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default.IdColumnIndex = (int)NudID.Value;
+			Properties.Settings.Default.Save();
+		}
+
+		private void NudEnglish_ValueChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default.EnglishColumnIndex = (int)NudEnglish.Value;
+			Properties.Settings.Default.Save();
+		}
+
+		private void btnApply_Click(object sender, EventArgs e)
+		{
+			logClear();
+			// Excel to Android
+			if (Properties.Settings.Default.Action == 0)
+			{
+				ExcelToAndroid importer = new ExcelToAndroid();
+				importer.FileName = Properties.Settings.Default.ExcelFile;
+				importer.FolderName = Properties.Settings.Default.ValuesFolder;
+				importer.IdColumnIndex = Properties.Settings.Default.IdColumnIndex;
+				importer.EnglishColumnIndex = Properties.Settings.Default.EnglishColumnIndex;
+
+				ExcelToAndroid.ExcelToAndroidInfo info = importer.ReadExcelAndApplyNewValues();
+				if (info.Error == null)
+				{
+					foreach (KeyValuePair<string, string> item in info.summary)
+					{
+						logAppendNewLine(item.Key + ": " + item.Value);
+					}
+				}
+				else
+				{
+					logException(info.Error);
+				}
+			}
+			// iOS to Excel
+			else if (Properties.Settings.Default.Action == 1)
+			{
+				IosToExcel importer = new IosToExcel();
+				importer.FileName = Properties.Settings.Default.ExcelFile;
+				importer.FolderName = Properties.Settings.Default.ValuesFolder;
+				importer.IdColumnIndex = Properties.Settings.Default.IdColumnIndex;
+				importer.EnglishColumnIndex = Properties.Settings.Default.EnglishColumnIndex;
+				//importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("{0}.xcloc\\Localized Contents\\{0}.xliff", IosToExcel.IosToExcelParamType.Xliff));
+				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("hp-photo-provider\\{0}.lproj\\Localizable.strings", IosToExcel.IosToExcelParamType.StringToString));
+				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("ios-print-sdk\\{0}.lproj\\Localizable.strings", IosToExcel.IosToExcelParamType.StringToString));
+				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("sprocket\\{0}.lproj\\InfoPlist.strings", IosToExcel.IosToExcelParamType.StringToVar));
+				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("sprocket\\settings\\{0}.lproj\\Root.strings", IosToExcel.IosToExcelParamType.StringToString));
+				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("sprocket\\{0}.xliff", IosToExcel.IosToExcelParamType.Xliff));
+
+				IosToExcel.IosToExcelInfo info = importer.Export(progressBar);
+				if(info.Error == null)
+				{
+					logAppendNewLine("Strings to look for: " + info.stringsToLookFor.Count);
+					foreach(KeyValuePair<string, int> item in info.stringsFromLanguage)
+					{
+						logAppendNewLine("Strings from " + item.Key + ": " + item.Value);
+					}
+					logAppendNewLine("Strings matching: " + info.stringsMatching.Count);
+					foreach (KeyValuePair<string, string> item in info.stringsMatching)
+					{
+						logAppendNewLine(item.Key + " => " + info.stringsToLookFor[item.Key]);
+					}
+					logAppendNewLine("Saved to: " + info.OutputFileName);
+				}
+				else
+				{
+					logException(info.Error);
+				}
+			}
+		}
+
+        private void updateButtons()
         {
-            if (oflSelectFile.ShowDialog() == DialogResult.OK && !String.IsNullOrEmpty(oflSelectFile.FileName))
-            {
-                fileName = oflSelectFile.FileName;
-                tbxSelectedFile.Text = fileName;
-                updateApplyButton();
+            btnApply.Enabled = !String.IsNullOrEmpty(Properties.Settings.Default.ValuesFolder) && !String.IsNullOrEmpty(Properties.Settings.Default.ExcelFile);
+		}
 
-                Properties.Settings.Default.ExcelFile = fileName;
-                Properties.Settings.Default.Save();
-            }
-        }
+		private void logClear()
+		{
+			txtOutput.Text = String.Empty;
+		}
 
-        private void btnApply_Click(object sender, EventArgs e)
-        {
-            readExcelAndApplyNewValues();
-        }
-
-        private void updateApplyButton()
-        {
-            btnApply.Enabled = !String.IsNullOrEmpty(folderName) && !String.IsNullOrEmpty(fileName);
-        }
-
-        private void readExcelAndApplyNewValues()
-        {
-            int changes = 0;
-
-            try
-            {
-                using (ExcelPackage xlPackage = new ExcelPackage(new FileInfo(fileName)))
-                {
-                    var workSheet = xlPackage.Workbook.Worksheets.First();
-                    var totalRows = workSheet.Dimension.End.Row;
-                    var totalCols = workSheet.Dimension.End.Column;
-
-                    txtOutput.Text = String.Empty;
-
-                    for (int col = 2; col <= totalCols; col++)
-                    {
-                        var language = workSheet.Cells[1, col].Text;
-                        if (languageToCode.ContainsKey(language))
-                        {
-                            var languageCode = languageToCode[language];
-
-                            Dictionary<string, string> values = new Dictionary<string, string>();
-
-                            for (int row = 2; row <= totalRows; row++)
-                            {
-                                var id = workSheet.Cells[row, 1].Text;
-                                if (id != String.Empty)
-                                {
-                                    var value = workSheet.Cells[row, col].Text.Trim(new char[] { ' ', (char)160 }).Replace("\'", "\\\'").Replace("\\\\", "\\");
-                                    if (values.ContainsKey(id))
-                                    {
-                                        MessageBox.Show("Duplicate key detected \"" + id + "\".\nPlease review your Excel file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                        return;
-                                    }
-                                    values.Add(id, value);
-                                }
-                            }
-
-                            if (values.Count > 0)
-                            {
-                                string[] languageCodes = languageCode.Split(',');
-                                foreach (string code in languageCodes)
-                                {
-                                    string fileName = Path.Combine(folderName, "values" + (code == String.Empty ? String.Empty : "-" + code) + "\\strings.xml");
-
-                                    logAppendNewLine(language + (code == String.Empty ? String.Empty : " (" + code + ")"));
-
-                                    changes += setValuesInXml(values, fileName);
-                                }
-                            }
-                        }
-                    }
-                }
-                MessageBox.Show("Done: " + changes + " string ids modified");
-            }
-            catch (IOException e)
-            {
-                MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private int setValuesInXml(Dictionary<string, string> values, string fileName)
-        {
-            int count = 0;
-
-            try
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.PreserveWhitespace = true;
-                doc.Load(fileName);
-
-                XmlNode parent = doc.SelectSingleNode("/resources");
-                foreach (KeyValuePair<string, string> value in values)
-                {
-                    if (!String.IsNullOrEmpty(value.Value))
-                    {
-                        XmlNodeList nodes = doc.SelectNodes("/resources/string[@name='" + value.Key + "']");
-
-                        if (nodes.Count == 0)
-                        {
-                            XmlNode indent = doc.CreateTextNode("    ");
-                            parent.AppendChild(indent);
-                            XmlAttribute attr = doc.CreateAttribute("name");
-                            attr.Value = value.Key;
-                            XmlNode node = doc.CreateNode(XmlNodeType.Element, "string", null);
-                            node.Attributes.Append(attr);
-                            node.InnerXml = value.Value;
-                            parent.AppendChild(node);
-                            XmlNode lineBreak = doc.CreateTextNode("\n");
-                            parent.AppendChild(lineBreak);
-                            count++;
-                        }
-                        else
-                        {
-                            foreach (XmlNode node in nodes)
-                            {
-                                if (node.InnerXml != value.Value)
-                                {
-                                    node.InnerXml = value.Value;
-                                    count++;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                doc.Save(fileName);
-
-                logAppend(": " + count);
-            }
-            catch(Exception e)
-            {
-                if(count > 0)
-                {
-                    logAppend(" aborted");
-                }
-                logAppendNewLine("  ERROR: " + e.ToString());
-            }
-
-            return count;
-        }
-
-        private void logAppend(string text)
+		private void logAppend(string text)
         {
             txtOutput.Text += text;
             Application.DoEvents();
@@ -233,9 +163,36 @@ namespace Localizationeer
             logAppend((txtOutput.Text == String.Empty ? String.Empty : "\r\n") + text);
         }
 
+		private void logException(Exception error)
+		{
+			logAppendNewLine("Operation failed\r\n" +
+				error.Message +
+				(error.InnerException != null ? "\r\n" + error.InnerException.ToString() : ""));
+		}
+
         private void btnAbout_Click(object sender, EventArgs e)
         {
             MessageBox.Show("He was tired of seeing people do this manually,\nso out of his laziness he made the computer do\nit for them.", "About this application", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-    }
+
+		private void cbxOption_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default.Action = cbxOption.SelectedIndex;
+			Properties.Settings.Default.Save();
+			if (cbxOption.SelectedIndex == 0)
+			{
+				lblSelectedFolder.Text = "The app/src/main/res folder which contains your values*/strings.xml files:";
+			}
+			else if (cbxOption.SelectedIndex == 1)
+			{
+				lblSelectedFolder.Text = "The folder which contains your *.xliff files:";
+			}
+		}
+
+		private void btnReset_Click(object sender, EventArgs e)
+		{
+			ResetSettings();
+			InitializeControls();
+		}
+	}
 }
