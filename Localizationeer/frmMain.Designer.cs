@@ -47,8 +47,11 @@
 			this.cbxOption = new System.Windows.Forms.ComboBox();
 			this.progressBar = new System.Windows.Forms.ProgressBar();
 			this.btnReset = new System.Windows.Forms.Button();
+			this.NudThreshold = new System.Windows.Forms.NumericUpDown();
+			this.label3 = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.NudEnglish)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.NudID)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.NudThreshold)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btnSelectFile
@@ -243,11 +246,35 @@
 			this.btnReset.UseVisualStyleBackColor = true;
 			this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
 			// 
+			// NudThreshold
+			// 
+			this.NudThreshold.Location = new System.Drawing.Point(490, 171);
+			this.NudThreshold.Name = "NudThreshold";
+			this.NudThreshold.Size = new System.Drawing.Size(120, 22);
+			this.NudThreshold.TabIndex = 20;
+			this.NudThreshold.Value = new decimal(new int[] {
+            70,
+            0,
+            0,
+            0});
+			this.NudThreshold.ValueChanged += new System.EventHandler(this.NudThreshold_ValueChanged);
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(351, 173);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(128, 17);
+			this.label3.TabIndex = 21;
+			this.label3.Text = "Compare threshold";
+			// 
 			// frmMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(622, 593);
+			this.Controls.Add(this.label3);
+			this.Controls.Add(this.NudThreshold);
 			this.Controls.Add(this.btnReset);
 			this.Controls.Add(this.progressBar);
 			this.Controls.Add(this.cbxOption);
@@ -271,6 +298,7 @@
 			this.Text = "Localizationeer";
 			((System.ComponentModel.ISupportInitialize)(this.NudEnglish)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.NudID)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.NudThreshold)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -297,6 +325,8 @@
 		private System.Windows.Forms.ComboBox cbxOption;
 		private System.Windows.Forms.ProgressBar progressBar;
 		private System.Windows.Forms.Button btnReset;
+		private System.Windows.Forms.NumericUpDown NudThreshold;
+		private System.Windows.Forms.Label label3;
 	}
 }
 

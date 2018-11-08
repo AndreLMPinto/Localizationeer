@@ -80,6 +80,12 @@ namespace Localizationeer
 			Properties.Settings.Default.Save();
 		}
 
+		private void NudThreshold_ValueChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default.Threshold = (int)NudThreshold.Value;
+			Properties.Settings.Default.Save();
+		}
+
 		private void btnApply_Click(object sender, EventArgs e)
 		{
 			logClear();
@@ -113,12 +119,7 @@ namespace Localizationeer
 				importer.FolderName = Properties.Settings.Default.ValuesFolder;
 				importer.IdColumnIndex = Properties.Settings.Default.IdColumnIndex;
 				importer.EnglishColumnIndex = Properties.Settings.Default.EnglishColumnIndex;
-				//importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("{0}.xcloc\\Localized Contents\\{0}.xliff", IosToExcel.IosToExcelParamType.Xliff));
-				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("hp-photo-provider\\{0}.lproj\\Localizable.strings", IosToExcel.IosToExcelParamType.StringToString));
-				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("ios-print-sdk\\{0}.lproj\\Localizable.strings", IosToExcel.IosToExcelParamType.StringToString));
-				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("sprocket\\{0}.lproj\\InfoPlist.strings", IosToExcel.IosToExcelParamType.StringToVar));
-				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("sprocket\\settings\\{0}.lproj\\Root.strings", IosToExcel.IosToExcelParamType.StringToString));
-				importer.ReadParams.Add(new IosToExcel.IosToExcelReadParam("sprocket\\{0}.xliff", IosToExcel.IosToExcelParamType.Xliff));
+				importer.Threshold = Properties.Settings.Default.Threshold;
 
 				IosToExcel.IosToExcelInfo info = importer.Export(progressBar);
 				if(info.Error == null)
@@ -131,7 +132,7 @@ namespace Localizationeer
 					logAppendNewLine("Strings matching: " + info.stringsMatching.Count);
 					foreach (KeyValuePair<string, string> item in info.stringsMatching)
 					{
-						logAppendNewLine(item.Key + " => " + info.stringsToLookFor[item.Key]);
+						logAppendNewLine(item.Key + " (" + info.howClose[item.Key] + "%) => " + info.stringsToLookFor[item.Key]);
 					}
 					logAppendNewLine("Saved to: " + info.OutputFileName);
 				}

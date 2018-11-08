@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloseEnoughComparer.cs" />
     <Compile Include="IosToExcel.cs" />
     <Compile Include="ExcelToAndroid.cs" />
     <Compile Include="frmMain.cs">
