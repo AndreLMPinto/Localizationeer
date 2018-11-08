@@ -220,7 +220,7 @@
 			this.cbxOption.FormattingEnabled = true;
 			this.cbxOption.Items.AddRange(new object[] {
             "Excel to Android xml files",
-            "Xliff iOS files to Excel"});
+            "iOS files to Excel"});
 			this.cbxOption.Location = new System.Drawing.Point(12, 13);
 			this.cbxOption.Name = "cbxOption";
 			this.cbxOption.Size = new System.Drawing.Size(597, 24);
@@ -238,6 +238,7 @@
 			// 
 			// btnReset
 			// 
+			this.btnReset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.btnReset.Location = new System.Drawing.Point(141, 553);
 			this.btnReset.Name = "btnReset";
 			this.btnReset.Size = new System.Drawing.Size(123, 28);

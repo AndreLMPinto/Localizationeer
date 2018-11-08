@@ -81,6 +81,7 @@ namespace Localizationeer
 			public Dictionary<string, int> stringsFromLanguage = new Dictionary<string, int>();
 			public Dictionary<string, string> stringsMatching = new Dictionary<string, string>();
 			public Dictionary<string, int> howClose = new Dictionary<string, int>();
+			public Dictionary<string, string> howCloseMatching = new Dictionary<string, string>();
 			public Exception Error;
 			public string OutputFileName;
 		}
@@ -135,14 +136,17 @@ namespace Localizationeer
 					foreach (KeyValuePair<string, string> lookFor in iosToExcelInfo.stringsToLookFor)
 					{
 						int howClose = CloseEnoughComparer.Compare(xliff.Value, lookFor.Value, StringComparison.InvariantCultureIgnoreCase);
+						//int howClose = LevenshteinComparer.Compare(xliff.Value, lookFor.Value, StringComparison.InvariantCultureIgnoreCase);
 						bar.Increment(1);
-						if (howClose > Threshold)
+						if (howClose >= Threshold)
 						{
 							if (iosToExcelInfo.stringsMatching.ContainsKey(lookFor.Key))
 							{
 								if (howClose > iosToExcelInfo.howClose[lookFor.Key])
 								{
 									iosToExcelInfo.stringsMatching[lookFor.Key] = xliff.Key;
+									iosToExcelInfo.howClose[lookFor.Key] = howClose;
+									iosToExcelInfo.howCloseMatching[lookFor.Key] = lookFor.Value;
 								}
 								//throw new Exception("Duplicate key detected \"" + lookFor.Key + "\"");
 							}
@@ -150,6 +154,7 @@ namespace Localizationeer
 							{
 								iosToExcelInfo.stringsMatching.Add(lookFor.Key, xliff.Key);
 								iosToExcelInfo.howClose.Add(lookFor.Key, howClose);
+								iosToExcelInfo.howCloseMatching.Add(lookFor.Key, xliff.Value);
 							}
 						}
 					}

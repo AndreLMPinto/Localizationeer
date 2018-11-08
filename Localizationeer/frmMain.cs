@@ -25,6 +25,7 @@ namespace Localizationeer
 			}
 			NudID.Value = Properties.Settings.Default.IdColumnIndex;
 			NudEnglish.Value = Properties.Settings.Default.EnglishColumnIndex;
+			NudThreshold.Value = Properties.Settings.Default.Threshold;
 			updateButtons();
 		}
 
@@ -36,6 +37,7 @@ namespace Localizationeer
 			Properties.Settings.Default.IdColumnIndex = 1;
 			Properties.Settings.Default.EnglishColumnIndex = 2;
 			Properties.Settings.Default.Action = 0;
+			Properties.Settings.Default.Threshold = 100;
 		}
 
         private void btnSelectFolder_Click(object sender, EventArgs e)
@@ -132,7 +134,12 @@ namespace Localizationeer
 					logAppendNewLine("Strings matching: " + info.stringsMatching.Count);
 					foreach (KeyValuePair<string, string> item in info.stringsMatching)
 					{
-						logAppendNewLine(item.Key + " (" + info.howClose[item.Key] + "%) => " + info.stringsToLookFor[item.Key]);
+						logAppendNewLine("[" + item.Key + "] (" + info.howClose[item.Key] + "%)");
+						if (info.howClose[item.Key] < 100)
+						{
+							logAppendNewLine(info.stringsToLookFor[item.Key]);
+							logAppendNewLine(info.howCloseMatching[item.Key]);
+						}
 					}
 					logAppendNewLine("Saved to: " + info.OutputFileName);
 				}
@@ -186,7 +193,7 @@ namespace Localizationeer
 			}
 			else if (cbxOption.SelectedIndex == 1)
 			{
-				lblSelectedFolder.Text = "The folder which contains your *.xliff files:";
+				lblSelectedFolder.Text = "The folder which contains your iOS files:";
 			}
 		}
 
