@@ -94,5 +94,17 @@ namespace Localizationeer.Properties {
                 this["Threshold"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int Filter {
+            get {
+                return ((int)(this["Filter"]));
+            }
+            set {
+                this["Filter"] = value;
+            }
+        }
     }
 }

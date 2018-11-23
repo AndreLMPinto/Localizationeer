@@ -11,41 +11,6 @@ namespace Localizationeer
 {
 	public class IosToExcel
 	{
-		static Dictionary<string, string> LanguageToCode = new Dictionary<string, string>()
-		{
-			{ "English", "en" },
-			{ "Japanese", "ja" },
-			{ "German", "de" },
-			{ "French (France)", "fr" },
-			{ "Spanish (Spain)", "es" },
-			{ "Simplified Chinese", "zh-Hans" },
-			{ "Italian", "it" },
-			{ "Dutch", "nl" },
-			{ "Portuguese (Portugal)", "pt" },
-			{ "Swedish", "sv" },
-			{ "Finnish", "fi" },
-			{ "Norwegian", "nb-NO" },
-			{ "Danish", "da" },
-			{ "Estonian", "et" },
-			{ "Latvian", "lv" },
-			{ "Lithuanian", "lt" },
-			{ "French (Canada)", "fr-CA" },
-			{ "Portuguese (Brazil)", "pt-BR" },
-			{ "Spanish (Mexico)", "es-MX" },
-			{ "Turkish", "tr-TR" },
-			{ "Greek", "el" },
-			{ "Traditional Chinese", "zh-Hant" },
-			{ "Thai", "th-TH" },
-			{ "Indonesian (Bahasa Indonesia)", "id" },
-			{ "Russian", "ru-RU" },
-			{ "Polish", "pl" },
-			{ "Hebrew", "he" },
-			{ "Hungarian", "hu" },
-			{ "Slovakian", "sk" },
-			{ "Czech", "cs" },
-			{ "Arabic", "ar" }
-		};
-
 		public IosToExcel()
 		{
 		}
@@ -111,7 +76,7 @@ namespace Localizationeer
 
 		private string getCodeWithFiles()
 		{
-			foreach (KeyValuePair<string, string> item in LanguageToCode)
+			foreach (KeyValuePair<string, string> item in Constants.IOSLanguageToCode)
 			{
 				string[] files = FindFiles(item.Value);
 				foreach (string file in files)
@@ -183,9 +148,9 @@ namespace Localizationeer
 					for (int col = EnglishColumnIndex + 1; col <= totalCols; col++)
 					{
 						var language = workSheet.Cells[1, col].Text;
-						if (LanguageToCode.ContainsKey(language))
+						if (Constants.IOSLanguageToCode.ContainsKey(language))
 						{
-							var languageCode = LanguageToCode[language];
+							var languageCode = Constants.IOSLanguageToCode[language];
 							Dictionary<string, string> stringsFromXliff = readStringsForLanguageCode(languageCode, false);
 							if (stringsFromXliff != null)
 							{

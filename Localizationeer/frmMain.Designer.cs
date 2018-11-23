@@ -41,14 +41,15 @@
 			this.lblOutput = new System.Windows.Forms.Label();
 			this.btnAbout = new System.Windows.Forms.Button();
 			this.NudEnglish = new System.Windows.Forms.NumericUpDown();
-			this.label2 = new System.Windows.Forms.Label();
-			this.label1 = new System.Windows.Forms.Label();
+			this.lblEnglish = new System.Windows.Forms.Label();
+			this.lblID = new System.Windows.Forms.Label();
 			this.NudID = new System.Windows.Forms.NumericUpDown();
 			this.cbxOption = new System.Windows.Forms.ComboBox();
 			this.progressBar = new System.Windows.Forms.ProgressBar();
 			this.btnReset = new System.Windows.Forms.Button();
 			this.NudThreshold = new System.Windows.Forms.NumericUpDown();
-			this.label3 = new System.Windows.Forms.Label();
+			this.lblThreshold = new System.Windows.Forms.Label();
+			this.cbxFilter = new System.Windows.Forms.ComboBox();
 			((System.ComponentModel.ISupportInitialize)(this.NudEnglish)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.NudID)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.NudThreshold)).BeginInit();
@@ -70,12 +71,12 @@
 			this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtOutput.Location = new System.Drawing.Point(12, 222);
+			this.txtOutput.Location = new System.Drawing.Point(12, 246);
 			this.txtOutput.Multiline = true;
 			this.txtOutput.Name = "txtOutput";
 			this.txtOutput.ReadOnly = true;
 			this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.txtOutput.Size = new System.Drawing.Size(598, 296);
+			this.txtOutput.Size = new System.Drawing.Size(598, 272);
 			this.txtOutput.TabIndex = 15;
 			// 
 			// btnSelectFolder
@@ -141,7 +142,7 @@
 			// lblOutput
 			// 
 			this.lblOutput.AutoSize = true;
-			this.lblOutput.Location = new System.Drawing.Point(12, 202);
+			this.lblOutput.Location = new System.Drawing.Point(12, 226);
 			this.lblOutput.Name = "lblOutput";
 			this.lblOutput.Size = new System.Drawing.Size(55, 17);
 			this.lblOutput.TabIndex = 14;
@@ -176,23 +177,23 @@
             0});
 			this.NudEnglish.ValueChanged += new System.EventHandler(this.NudEnglish_ValueChanged);
 			// 
-			// label2
+			// lblEnglish
 			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(12, 173);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(140, 17);
-			this.label2.TabIndex = 10;
-			this.label2.Text = "English column index";
+			this.lblEnglish.AutoSize = true;
+			this.lblEnglish.Location = new System.Drawing.Point(12, 173);
+			this.lblEnglish.Name = "lblEnglish";
+			this.lblEnglish.Size = new System.Drawing.Size(140, 17);
+			this.lblEnglish.TabIndex = 10;
+			this.lblEnglish.Text = "English column index";
 			// 
-			// label1
+			// lblID
 			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(12, 144);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(107, 17);
-			this.label1.TabIndex = 8;
-			this.label1.Text = "ID column index";
+			this.lblID.AutoSize = true;
+			this.lblID.Location = new System.Drawing.Point(12, 144);
+			this.lblID.Name = "lblID";
+			this.lblID.Size = new System.Drawing.Size(107, 17);
+			this.lblID.TabIndex = 8;
+			this.lblID.Text = "ID column index";
 			// 
 			// NudID
 			// 
@@ -220,7 +221,8 @@
 			this.cbxOption.FormattingEnabled = true;
 			this.cbxOption.Items.AddRange(new object[] {
             "Excel to Android xml files",
-            "iOS files to Excel"});
+            "iOS files to Excel",
+            "Check Android xml files"});
 			this.cbxOption.Location = new System.Drawing.Point(12, 13);
 			this.cbxOption.Name = "cbxOption";
 			this.cbxOption.Size = new System.Drawing.Size(597, 24);
@@ -252,7 +254,7 @@
 			this.NudThreshold.Location = new System.Drawing.Point(490, 171);
 			this.NudThreshold.Name = "NudThreshold";
 			this.NudThreshold.Size = new System.Drawing.Size(120, 22);
-			this.NudThreshold.TabIndex = 20;
+			this.NudThreshold.TabIndex = 13;
 			this.NudThreshold.Value = new decimal(new int[] {
             70,
             0,
@@ -260,28 +262,45 @@
             0});
 			this.NudThreshold.ValueChanged += new System.EventHandler(this.NudThreshold_ValueChanged);
 			// 
-			// label3
+			// lblThreshold
 			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(351, 173);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(128, 17);
-			this.label3.TabIndex = 21;
-			this.label3.Text = "Compare threshold";
+			this.lblThreshold.AutoSize = true;
+			this.lblThreshold.Location = new System.Drawing.Point(351, 173);
+			this.lblThreshold.Name = "lblThreshold";
+			this.lblThreshold.Size = new System.Drawing.Size(128, 17);
+			this.lblThreshold.TabIndex = 12;
+			this.lblThreshold.Text = "Compare threshold";
+			// 
+			// cbxFilter
+			// 
+			this.cbxFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.cbxFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cbxFilter.FormattingEnabled = true;
+			this.cbxFilter.Items.AddRange(new object[] {
+            "All",
+            "Missing strings only",
+            "Format error only"});
+			this.cbxFilter.Location = new System.Drawing.Point(14, 199);
+			this.cbxFilter.Name = "cbxFilter";
+			this.cbxFilter.Size = new System.Drawing.Size(595, 24);
+			this.cbxFilter.TabIndex = 20;
+			this.cbxFilter.SelectedIndexChanged += new System.EventHandler(this.cbxFilter_SelectedIndexChanged);
 			// 
 			// frmMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(622, 593);
-			this.Controls.Add(this.label3);
+			this.Controls.Add(this.cbxFilter);
+			this.Controls.Add(this.lblThreshold);
 			this.Controls.Add(this.NudThreshold);
 			this.Controls.Add(this.btnReset);
 			this.Controls.Add(this.progressBar);
 			this.Controls.Add(this.cbxOption);
 			this.Controls.Add(this.NudEnglish);
-			this.Controls.Add(this.label2);
-			this.Controls.Add(this.label1);
+			this.Controls.Add(this.lblEnglish);
+			this.Controls.Add(this.lblID);
 			this.Controls.Add(this.NudID);
 			this.Controls.Add(this.btnAbout);
 			this.Controls.Add(this.lblOutput);
@@ -320,14 +339,15 @@
         private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.Button btnAbout;
 		private System.Windows.Forms.NumericUpDown NudEnglish;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Label lblEnglish;
+		private System.Windows.Forms.Label lblID;
 		private System.Windows.Forms.NumericUpDown NudID;
 		private System.Windows.Forms.ComboBox cbxOption;
 		private System.Windows.Forms.ProgressBar progressBar;
 		private System.Windows.Forms.Button btnReset;
 		private System.Windows.Forms.NumericUpDown NudThreshold;
-		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.Label lblThreshold;
+		private System.Windows.Forms.ComboBox cbxFilter;
 	}
 }
 

@@ -9,41 +9,6 @@ namespace Localizationeer
 {
 	public class ExcelToAndroid
 	{
-		static Dictionary<string, string> LanguageToCode = new Dictionary<string, string>()
-		{
-			{ "English", String.Empty },
-			{ "Japanese", "ja" },
-			{ "German", "de" },
-			{ "French (France)", "fr" },
-			{ "Spanish (Spain)", "es" },
-			{ "Simplified Chinese", "zh" },
-			{ "Italian", "it" },
-			{ "Dutch", "nl" },
-			{ "Portuguese (Portugal)", "pt" },
-			{ "Swedish", "sv" },
-			{ "Finnish", "fi" },
-			{ "Norwegian", "nb-rNO" },
-			{ "Danish", "da" },
-			{ "Estonian", "et" },
-			{ "Latvian", "lv" },
-			{ "Lithuanian", "lt" },
-			{ "French (Canada)", "fr-rCA" },
-			{ "Portuguese (Brazil)", "pt-rBR" },
-			{ "Spanish (Mexico)", "es-rMX" },
-			{ "Turkish", "tr-rTR" },
-			{ "Greek", "el" },
-			{ "Traditional Chinese", "zh-rHK,zh-rTW" },
-			{ "Thai", "th-rTH" },
-			{ "Indonesian (Bahasa Indonesia)", "id,in" },
-			{ "Russian", "ru-rRU" },
-			{ "Polish", "pl" },
-			{ "Hebrew", "he,iw" },
-			{ "Hungarian", "hu" },
-			{ "Slovakian", "sk" },
-			{ "Czech", "cs" },
-			{ "Arabic", "ar" }
-		};
-
 		public ExcelToAndroid()
 		{
 		}
@@ -79,9 +44,9 @@ namespace Localizationeer
 					for (int col = EnglishColumnIndex; col <= totalCols; col++)
 					{
 						var language = workSheet.Cells[1, col].Text;
-						if (LanguageToCode.ContainsKey(language))
+						if (Constants.AndroidLanguageToCode.ContainsKey(language))
 						{
-							var languageCode = LanguageToCode[language];
+							var languageCode = Constants.AndroidLanguageToCode[language];
 
 							Dictionary<string, string> values = new Dictionary<string, string>();
 
