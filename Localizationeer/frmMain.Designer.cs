@@ -50,6 +50,10 @@
 			this.NudThreshold = new System.Windows.Forms.NumericUpDown();
 			this.lblThreshold = new System.Windows.Forms.Label();
 			this.cbxFilter = new System.Windows.Forms.ComboBox();
+			this.btnDeleteKey = new System.Windows.Forms.Button();
+			this.tbxDeleteKey = new System.Windows.Forms.TextBox();
+			this.lblDeleteKey = new System.Windows.Forms.Label();
+			this.btnDeleteTranslationsOnly = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.NudEnglish)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.NudID)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.NudThreshold)).BeginInit();
@@ -76,7 +80,7 @@
 			this.txtOutput.Name = "txtOutput";
 			this.txtOutput.ReadOnly = true;
 			this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.txtOutput.Size = new System.Drawing.Size(598, 272);
+			this.txtOutput.Size = new System.Drawing.Size(598, 224);
 			this.txtOutput.TabIndex = 15;
 			// 
 			// btnSelectFolder
@@ -287,11 +291,56 @@
 			this.cbxFilter.TabIndex = 20;
 			this.cbxFilter.SelectedIndexChanged += new System.EventHandler(this.cbxFilter_SelectedIndexChanged);
 			// 
+			// btnDeleteKey
+			// 
+			this.btnDeleteKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnDeleteKey.Location = new System.Drawing.Point(357, 490);
+			this.btnDeleteKey.Name = "btnDeleteKey";
+			this.btnDeleteKey.Size = new System.Drawing.Size(123, 28);
+			this.btnDeleteKey.TabIndex = 21;
+			this.btnDeleteKey.Text = "Delete Key";
+			this.btnDeleteKey.UseVisualStyleBackColor = true;
+			this.btnDeleteKey.Click += new System.EventHandler(this.btnDeleteKey_Click);
+			// 
+			// tbxDeleteKey
+			// 
+			this.tbxDeleteKey.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbxDeleteKey.Location = new System.Drawing.Point(12, 493);
+			this.tbxDeleteKey.Name = "tbxDeleteKey";
+			this.tbxDeleteKey.Size = new System.Drawing.Size(339, 22);
+			this.tbxDeleteKey.TabIndex = 22;
+			// 
+			// lblDeleteKey
+			// 
+			this.lblDeleteKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.lblDeleteKey.AutoSize = true;
+			this.lblDeleteKey.Location = new System.Drawing.Point(12, 473);
+			this.lblDeleteKey.Name = "lblDeleteKey";
+			this.lblDeleteKey.Size = new System.Drawing.Size(123, 17);
+			this.lblDeleteKey.TabIndex = 23;
+			this.lblDeleteKey.Text = "String id to delete:";
+			// 
+			// btnDeleteTranslationsOnly
+			// 
+			this.btnDeleteTranslationsOnly.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnDeleteTranslationsOnly.Location = new System.Drawing.Point(486, 490);
+			this.btnDeleteTranslationsOnly.Name = "btnDeleteTranslationsOnly";
+			this.btnDeleteTranslationsOnly.Size = new System.Drawing.Size(123, 28);
+			this.btnDeleteTranslationsOnly.TabIndex = 24;
+			this.btnDeleteTranslationsOnly.Text = "Translations";
+			this.btnDeleteTranslationsOnly.UseVisualStyleBackColor = true;
+			this.btnDeleteTranslationsOnly.Click += new System.EventHandler(this.btnDeleteTranslationsOnly_Click);
+			// 
 			// frmMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(622, 593);
+			this.Controls.Add(this.btnDeleteTranslationsOnly);
+			this.Controls.Add(this.lblDeleteKey);
+			this.Controls.Add(this.tbxDeleteKey);
+			this.Controls.Add(this.btnDeleteKey);
 			this.Controls.Add(this.cbxFilter);
 			this.Controls.Add(this.lblThreshold);
 			this.Controls.Add(this.NudThreshold);
@@ -348,6 +397,10 @@
 		private System.Windows.Forms.NumericUpDown NudThreshold;
 		private System.Windows.Forms.Label lblThreshold;
 		private System.Windows.Forms.ComboBox cbxFilter;
+		private System.Windows.Forms.Button btnDeleteKey;
+		private System.Windows.Forms.TextBox tbxDeleteKey;
+		private System.Windows.Forms.Label lblDeleteKey;
+		private System.Windows.Forms.Button btnDeleteTranslationsOnly;
 	}
 }
 

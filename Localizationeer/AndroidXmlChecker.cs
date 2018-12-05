@@ -25,7 +25,7 @@ namespace Localizationeer
 			public List<StringData> Summary = new List<StringData>();
 			public Exception Error;
 
-			public void AddSummary(string id, string code, string text, bool isTranslatable)
+			public void AddSummary(string id, string code, string text, bool isTranslatable, string fileName)
 			{
 				StringData sd = null;
 				if (Summary.Exists(d => d.StringId == id))
@@ -38,7 +38,7 @@ namespace Localizationeer
 					Summary.Add(sd);
 				}
 
-				sd.IsTranslatable = isTranslatable;
+				sd.IsTranslatable &= isTranslatable;
 
 				LanguageData ld = null;
 				if (sd.Data.Exists(d => d.Code == code))
@@ -47,16 +47,16 @@ namespace Localizationeer
 				}
 				if (ld == null)
 				{
-					ld = new LanguageData(code, text);
+					ld = new LanguageData(code, text, fileName);
 					sd.Data.Add(ld);
 				}
-				else if (ld.Text != text)
+				else if (ld.Text != text || ld.FileName != fileName)
 				{
 					throw new Exception("Duplicated text for the same String ID and Code." +
 						"\nString ID: " + id +
 						"\nCode: " + code +
-						"\nText 1: " + ld.Text +
-						"\nText 2: " + text);
+						"\nText 1 (" + ld.FileName + "): " + ld.Text +
+						"\nText 2 (" + fileName + "): " + text);
 				}
 			}
 
@@ -78,26 +78,35 @@ namespace Localizationeer
 				Data = new List<LanguageData>();
 				FormatIssueCodes = new List<string>();
 				MissingTranslationCodes = new List<string>();
+				FoundTranslationCodes = new List<string>();
 			}
 
 			public string StringId { get; private set; }
 			public bool IsTranslatable { get; set; }
+			public bool HasDefault { get { return Data.Exists(d => string.IsNullOrEmpty(d.Code)); } }
+			public LanguageData DefaultData { get { return Data.Find(d => string.IsNullOrEmpty(d.Code)); } }
 			public List<LanguageData> Data { get; private set; }
 			public bool FormatIssue { get { return FormatIssueCodes.Count > 0; } }
 			public List<string> FormatIssueCodes { get; private set; }
 			public bool MissingTranslation { get { return MissingTranslationCodes.Count > 0; } }
 			public List<string> MissingTranslationCodes { get; private set; }
+			public bool FoundTranslation { get { return FoundTranslationCodes.Count > 0; } }
+			public List<string> FoundTranslationCodes { get; private set; }
 
 			public void Validate(ProgressBar bar, List<string> codes)
 			{
-				// missing translations
-				if(codes.Count != Data.Count)
+				// missing/found translations
+				if (codes.Count != Data.Count)
 				{
-					foreach(string code in codes)
+					foreach (string code in codes)
 					{
-						if(!Data.Exists(d => d.Code == code))
+						if (!Data.Exists(d => d.Code == code))
 						{
 							MissingTranslationCodes.Add(code);
+						}
+						else if (!String.IsNullOrEmpty(code))
+						{
+							FoundTranslationCodes.Add(code);
 						}
 					}
 				}
@@ -123,11 +132,12 @@ namespace Localizationeer
 
 		public class LanguageData
 		{
-			public LanguageData(string code, string text)
+			public LanguageData(string code, string text, string fileName)
 			{
 				Specifiers = new List<string>();
 				Code = code;
 				Text = text;
+				FileName = fileName;
 			}
 
 			string _text;
@@ -151,6 +161,7 @@ namespace Localizationeer
 				}
 			}
 			public List<string> Specifiers { get; private set; }
+			public string FileName { get; private set; }
 		}
 
 		public AndroidXmlInfo Validate(ProgressBar bar)
@@ -167,23 +178,25 @@ namespace Localizationeer
 			{
 				foreach (string code in info.Codes)
 				{
-					string fileName = Path.Combine(FolderName, "values" + (code == String.Empty ? String.Empty : "-" + code) + "\\strings.xml");
-
-					XmlDocument doc = new XmlDocument();
-					doc.PreserveWhitespace = true;
-					doc.Load(fileName);
-
-					XmlNodeList nodes = doc.SelectNodes("/resources/string");
-					foreach (XmlNode node in nodes)
+					string[] fileNames = GetFiles(code);
+					foreach (string fileName in fileNames)
 					{
-						string id = node.Attributes["name"].Value;
-						string text = node.InnerXml;
-						bool isTranslatable = true;
-						if (node.Attributes["translatable"] != null)
+						XmlDocument doc = new XmlDocument();
+						doc.PreserveWhitespace = true;
+						doc.Load(fileName);
+
+						XmlNodeList nodes = doc.SelectNodes("/resources/string");
+						foreach (XmlNode node in nodes)
 						{
-							isTranslatable = node.Attributes["translatable"].Value == "true";
+							string id = node.Attributes["name"].Value;
+							string text = node.InnerXml;
+							bool isTranslatable = true;
+							if (node.Attributes["translatable"] != null)
+							{
+								isTranslatable = node.Attributes["translatable"].Value == "true";
+							}
+							info.AddSummary(id, code, text, isTranslatable, fileName);
 						}
-						info.AddSummary(id, code, text, isTranslatable);
 					}
 				}
 			}
@@ -195,6 +208,68 @@ namespace Localizationeer
 			if(info.Error == null)
 			{
 				info.Validate(bar);
+			}
+
+			return info;
+		}
+
+		private string[] GetFiles(string code)
+		{
+			string path = Path.Combine(FolderName, "values" + (code == String.Empty ? String.Empty : "-" + code) + "\\");
+			return Directory.GetFiles(path, "*.xml");
+		}
+
+		public class DeleteKeyInfo
+		{
+			public DeleteKeyInfo()
+			{
+
+			}
+
+			public int Count = 0;
+			public Exception Error;
+		}
+
+		public DeleteKeyInfo DeleteKey(StringData stringData, bool translationsOnly, ProgressBar bar)
+		{
+			DeleteKeyInfo info = new DeleteKeyInfo();
+			try
+			{
+				foreach (LanguageData languageData in stringData.Data)
+				{
+					string code = languageData.Code;
+					if(translationsOnly && String.IsNullOrEmpty(code))
+					{
+						continue;
+					}
+
+					string fileName = languageData.FileName;
+
+					XmlDocument doc = new XmlDocument();
+					doc.PreserveWhitespace = true;
+					doc.Load(fileName);
+
+					XmlNode parent = doc.SelectSingleNode("/resources");
+					XmlNodeList nodes = doc.SelectNodes("/resources/string[@name='" + stringData.StringId + "']");
+					foreach (XmlNode node in nodes)
+					{
+						XmlNode previous = node.PreviousSibling;
+						while(previous != null && previous is XmlWhitespace)
+						{
+							XmlNode whitespace = previous;
+							previous = whitespace.PreviousSibling;
+							parent.RemoveChild(whitespace);
+						}
+						parent.RemoveChild(node);
+						info.Count++;
+					}
+
+					doc.Save(fileName);
+				}
+			}
+			catch (Exception e)
+			{
+				info.Error = e;
 			}
 
 			return info;

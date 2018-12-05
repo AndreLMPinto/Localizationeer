@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
@@ -189,11 +190,13 @@ namespace Localizationeer
 			}
 		}
 
+		private AndroidXmlChecker.AndroidXmlInfo info = null;
+
 		private void checkAndroid()
 		{
 			AndroidXmlChecker checker = new AndroidXmlChecker();
 			checker.FolderName = Properties.Settings.Default.ValuesFolder;
-			AndroidXmlChecker.AndroidXmlInfo info = checker.Validate(progressBar);
+			info = checker.Validate(progressBar);
 
 			logClear();
 			if (info.Error != null)
@@ -213,26 +216,85 @@ namespace Localizationeer
 						continue;
 					}
 					count++;
-					sb.Append((sb.Length == 0 ? "" : "\r\n") + sd.StringId);
-					//logAppendNewLine(sd.StringId);
+					sb.Append((sb.Length == 0 ? "" : "\r\n\r\n") + sd.StringId);
 					if (showMissingTranslation)
 					{
-						sb.Append("\r\n    Missing translations (" + sd.MissingTranslationCodes.Count + "): ");
-						//logAppendNewLine("    Missing translations (" + sd.ErrorMissingTranslationCodes.Count + "): ");
-						for (int i = 0; i < sd.MissingTranslationCodes.Count; i++)
+						bool showMissing = false;
+						bool showFound = false;
+						if (sd.HasDefault)
 						{
-							string code = sd.MissingTranslationCodes[i];
-							if(string.IsNullOrEmpty(code))
+							sb.Append("\r\n" + Path.GetFileName(sd.DefaultData.FileName));
+						}
+						if (sd.IsTranslatable)
+						{
+							if (sd.HasDefault)
 							{
-								code = "en";
+								if (!sd.FoundTranslation)
+								{
+									sb.Append("\r\nNot translated");
+								}
+								else if (sd.MissingTranslation)
+								{
+									sb.Append("\r\nMissing translations");
+									showMissing = true;
+								}
 							}
-							sb.Append((i > 0 ? ", " : "") + code);
-							//logAppend((i > 0 ? ", " : "") + code);
+							else 
+							{
+								if (sd.MissingTranslation)
+								{
+									sb.Append("\r\nNo default, missing translations");
+									showMissing = true;
+								}
+								else if (sd.FoundTranslation)
+								{
+									sb.Append("\r\nNo default, found translations");
+									showFound = true;
+								}
+							}
+						}
+						else
+						{
+							sb.Append("\r\nNot translatable");
+							if(sd.FoundTranslation)
+							{
+								sb.Append(", found translations");
+								showFound = true;
+							}
+						}
+						if (showMissing)
+						{
+							sb.Append(" (" + sd.MissingTranslationCodes.Count + "): ");
+							for (int i = 0; i < sd.MissingTranslationCodes.Count; i++)
+							{
+								string code = sd.MissingTranslationCodes[i];
+								if (string.IsNullOrEmpty(code))
+								{
+									code = "en";
+								}
+								sb.Append((i > 0 ? ", " : "") + code);
+							}
+						}
+						else if (showFound)
+						{
+							sb.Append(" (" + sd.FoundTranslationCodes.Count + "): ");
+							for (int i = 0; i < sd.FoundTranslationCodes.Count; i++)
+							{
+								sb.Append((i > 0 ? ", " : "") + sd.FoundTranslationCodes[i]);
+							}
+						}
+						if (sd.HasDefault)
+						{
+							AndroidXmlChecker.LanguageData ld = sd.Data.Find(d => String.IsNullOrEmpty(d.Code));
+							if (ld != null)
+							{
+								sb.Append("\r\n" + ld.Text + "");
+							}
 						}
 					}
 					if (showFormatIssue)
 					{
-						sb.Append("\r\n    Format issues (" + sd.FormatIssueCodes.Count + "): ");
+						sb.Append("\r\nFormat issues (" + sd.FormatIssueCodes.Count + "): ");
 						//logAppendNewLine("    Format issues (" + sd.ErrorSpecifierCodes.Count + "): ");
 						for (int i = 0; i < sd.FormatIssueCodes.Count; i++)
 						{
@@ -254,24 +316,89 @@ namespace Localizationeer
 					{
 						sb.Append("\r\nLanguage codes: " + info.Codes.Count);
 						sb.Append("\r\nTips:" +
-							"\r\n    Strings without English (en) are probably out of use." +
-							"\r\n    Strings that are only in English are probably awaiting for translation or not supposed to be translated.");
+							"\r\n* Strings without English (en) are probably out of use." +
+							"\r\n* Strings that are only in English are probably awaiting for translation or not supposed to be translated.");
 					}
 				}
 				logAppend(sb.ToString());
 			}
 		}
 
-        private void updateButtons()
+		private void btnDeleteKey_Click(object sender, EventArgs e)
+		{
+			deleteKey(false);
+		}
+
+		private void btnDeleteTranslationsOnly_Click(object sender, EventArgs e)
+		{
+			deleteKey(true);
+		}
+
+		private void deleteKey(bool translationsOnly)
+		{
+			if (info != null)
+			{
+				AndroidXmlChecker checker = new AndroidXmlChecker();
+				checker.FolderName = Properties.Settings.Default.ValuesFolder;
+				string stringId = tbxDeleteKey.Text;
+
+				if (info.Summary.Exists(d => d.StringId == stringId))
+				{
+					AndroidXmlChecker.StringData stringData = info.Summary.Find(d => d.StringId == stringId);
+					AndroidXmlChecker.DeleteKeyInfo deleteKeyInfo = checker.DeleteKey(stringData, translationsOnly, progressBar);
+					if (deleteKeyInfo.Error != null)
+					{
+						MessageBox.Show(
+							"Delete Key: " + stringId + "\r\n" +
+							"Delete count: " + deleteKeyInfo.Count + "\r\n" +
+							"Error: " + deleteKeyInfo.Error.ToString(),
+							"Delete Key Error",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Error);
+					}
+					else
+					{
+						MessageBox.Show(
+							"Delete Key: " + stringId + "\r\n" +
+							"Delete count: " + deleteKeyInfo.Count,
+							"Delete Key Success",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Information);
+					}
+				}
+				else
+				{
+					MessageBox.Show(
+						"Delete Key: " + stringId + "\r\n" +
+						"String id not found.",
+						"Delete Key Error",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
+				}
+			}
+			else
+			{
+				MessageBox.Show(
+					"Please run first the \"Check Android xml files\" option.",
+					"Delete Key Warning",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+			}
+
+		}
+
+		private void updateButtons()
         {
 			switch (Properties.Settings.Default.Action)
 			{
 				case 0:
-				case 2:
 					lblSelectedFolder.Text = "The app/src/main/res folder which contains your values*/strings.xml files:";
 					break;
 				case 1:
 					lblSelectedFolder.Text = "The folder which contains your iOS files:";
+					break;
+				case 2:
+					lblSelectedFolder.Text = "The app/src/main/res folder which contains your values*/*.xml files:";
 					break;
 			}
 

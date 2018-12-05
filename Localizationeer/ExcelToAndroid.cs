@@ -115,7 +115,7 @@ namespace Localizationeer
 							node.Attributes.Append(attr);
 							node.InnerXml = value.Value;
 							parent.AppendChild(node);
-							XmlNode lineBreak = doc.CreateTextNode("\n");
+							XmlNode lineBreak = doc.CreateTextNode("\r\n");
 							parent.AppendChild(lineBreak);
 							count++;
 						}
