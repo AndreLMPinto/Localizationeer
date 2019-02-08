@@ -274,5 +274,66 @@ namespace Localizationeer
 
 			return info;
 		}
+
+		/// <summary>
+		/// Replaces the content of a string, in every language, using a function.
+		/// Given a string A, in the language L, we get the string A', 
+		/// which is the result of calling the function F with A as parameter.
+		/// </summary>
+		/// <example>
+		/// ReplaceContent("A", (content) => { return content.Replace("\\r", ""); )
+		/// </example>
+		/// <param name="stringId">The stringId to be affected by the function.</param>
+		/// <param name="newContent">A function that receives a string for the stringId for one language and returns a new string to be used instead.</param>
+		/// <returns>The number of effective (languages affected by) changes</returns>
+		public int ReplaceContent(string stringId, Func<string, string> newContent)
+		{
+			int count = 0;
+			List<string> codes = new List<string>();
+			foreach (string key in Constants.AndroidLanguageToCode.Keys)
+			{
+				foreach (string code in Constants.AndroidLanguageToCode[key].Split(','))
+				{
+					codes.Add(code);
+				}
+			}
+			try
+			{
+				foreach (string code in codes)
+				{
+					string[] fileNames = GetFiles(code);
+					foreach (string fileName in fileNames)
+					{
+						XmlDocument doc = new XmlDocument();
+						doc.PreserveWhitespace = true;
+						doc.Load(fileName);
+
+						int changes = 0;
+						XmlNodeList nodes = doc.SelectNodes("/resources/string[@name='" + stringId + "']");
+						foreach (XmlNode node in nodes)
+						{
+							string content = newContent(node.InnerXml);
+							if (node.InnerXml != content)
+							{
+								node.InnerXml = content;
+								changes++;
+							}
+						}
+
+						if (changes > 0)
+						{
+							doc.Save(fileName);
+						}
+						count += changes;
+					}
+				}
+			}
+			catch (Exception)
+			{
+				return count;
+			}
+
+			return count;
+		}
 	}
 }
